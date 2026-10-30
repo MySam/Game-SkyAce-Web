@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Sky Ace</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div id="hud" class="hidden">
+  <button id="btnHome" class="sq-btn home" aria-label="홈">
+    <svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8M5.5 9.5V21h4.5v-6h4v6h4.5V9.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>
+  </button>
+
+  <div id="topCenter">
+    <div id="missionLine">초보 작전 1 · 적기 2기 · 단계 1 · 0/2</div>
+    <div id="objective">스로틀을 올려 이륙하세요</div>
+  </div>
+
+  <canvas id="radar" width="240" height="240"></canvas>
+
+  <div id="crosshair"></div>
+  <div id="wpMarker"><div class="ring"></div><span class="lbl">◇ 거점 <b>0</b>m</span></div>
+  <div id="markers"></div>
+
+  <div id="throttle">
+    <div class="cap">THROTTLE</div>
+    <div class="val">0%</div>
+    <div class="track"><div class="fill"></div><div class="knob"></div></div>
+  </div>
+  <div id="thBtns"><span id="thMax">최대</span> / <span id="thStop">정지</span></div>
+
+  <div id="spd" class="gauge"><div class="cap">SPEED</div><div class="box">0</div><div class="unit">km/h</div></div>
+  <div id="alt" class="gauge"><div class="cap">ALT</div><div class="box">0</div><div class="unit">m</div></div>
+
+  <button id="btnCam" class="circ-btn" aria-label="카메라">
+    <svg viewBox="0 0 24 24"><path d="M4 8h3.5l1.5-2.5h6L16.5 8H20v11H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+  </button>
+  <button id="btnGear" class="tall-btn" aria-label="랜딩기어">
+    <svg viewBox="0 0 24 24"><path d="M12 3v6M5 9h14M7 9v5M17 9v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="7" cy="17" r="2.6" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="17" cy="17" r="2.6" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+    <span id="gearLbl">올림</span>
+  </button>
+
+  <div id="weapons">
+    <div class="wslot">
+      <button id="btnGun" class="wpn" aria-label="기관포">
+        <svg viewBox="0 0 48 48"><g fill="#fff"><path d="M11 40V22c0-6 3-11 4.5-13C17 11 20 16 20 22v18z"/><path d="M20.5 42V21c0-6 3-11 4.5-13 1.5 2 4.5 7 4.5 13v21z"/><path d="M30 40V22c0-6 3-11 4.5-13C36 11 39 16 39 22v18z"/></g></svg>
+      </button>
+      <div id="gunCount" class="cnt">600</div>
+    </div>
+    <div class="wslot">
+      <button id="btnMsl" class="wpn" aria-label="미사일">
+        <svg viewBox="0 0 48 48"><g fill="#fff" transform="rotate(45 24 24)"><path d="M24 3c3 3 4.5 7 4.5 11v20h-9V14c0-4 1.5-8 4.5-11z"/><path d="M19.5 26l-6 8v3l6-3zM28.5 26l6 8v3l-6-3z"/><path d="M21 35h6l-1 6h-4z" opacity=".8"/></g></svg>
+      </button>
+      <div id="mslCount" class="cnt">2</div>
+    </div>
+  </div>
+  <button id="btnTarget" class="pill">TARGET</button>
+  <button id="btnFlare" class="pill">FLARE <small id="flareCount">24</small></button>
+
+  <div id="hull"><div class="txt">기체 <b>100%</b></div><div class="bar"><div class="fillb"></div></div></div>
+  <div id="warn">⚠ 미사일 경보</div>
+  <div id="lockTxt">LOCK</div>
+  <div id="toast"></div>
+  <div id="stickBase"><div id="stickKnob"></div></div>
+</div>
+
+<div id="menu">
+  <div class="menu-card">
+    <div class="logo">SKY<span>ACE</span></div>
+    <div class="sub">3D 비행 전투 시뮬레이션</div>
+    <div id="missionList"></div>
+    <div class="opts">
+      <label><input type="checkbox" id="optInvert"> 상하 반전</label>
+      <label><input type="checkbox" id="optSound" checked> 효과음</label>
+      <label><input type="checkbox" id="optMusic" checked> 배경음악</label>
+      <label><input type="checkbox" id="optHQ" checked> 고화질</label>
+    </div>
+    <details class="howto"><summary>조작 방법</summary>
+      <ul>
+        <li>화면 아무 곳이나 드래그: 기수 조종 (위로 = 상승, 좌우 = 선회)</li>
+        <li>왼쪽 스로틀 바: 속도 조절 · 약 180km/h 이상에서 위로 당겨 이륙</li>
+        <li>기관포 버튼을 누르고 있으면 연사 · 미사일은 LOCK 후 발사</li>
+        <li>TARGET: 표적 전환 · FLARE: 미사일 회피</li>
+        <li>교전 거점으로 이동하면 적 편대가 나타나고, 계속 증원이 몰려옵니다</li>
+        <li>빨간 테두리 = 전투기, 주황 = 에이스(강함), 큰 마름모 = 폭격기(고득점)</li>
+        <li>연속 격추 시 콤보 보너스 · 서바이벌 모드에서 최고 기록에 도전하세요</li>
+      </ul>
+    </details>
+  </div>
+</div>
+
+<div id="overlay" class="hidden">
+  <div class="ov-card">
+    <div id="ovTitle">작전 성공</div>
+    <div id="ovBody"></div>
+    <div id="ovBtns"></div>
+  </div>
+</div>
+
+<script src="three.min.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
