@@ -1,3 +1,5 @@
+## SkyAce-Web  URL
+https://mysam.github.io/Game-SkyAce-Web/assets/
 
 ## git 추가
 git init \
